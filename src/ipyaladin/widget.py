@@ -263,6 +263,17 @@ class Aladin(anywidget.AnyWidget):
         return catalogs
 
     @property
+    def selected_objects_raw(self) -> List[Any]:
+        """The raw list of catalogs selected by the user.
+
+        Returns
+        -------
+        list[Any]
+            A list of the raw aladin-lite selected objects.
+        """
+        return self._selected_objects
+
+    @property
     def height(self) -> int:
         """The height of the widget.
 
@@ -926,6 +937,21 @@ class Aladin(anywidget.AnyWidget):
         if selection_type not in {"circle", "rectangle"}:
             raise ValueError("selection_type must be 'circle' or 'rectangle'")
         self.send({"event_name": "trigger_selection", "selection_type": selection_type})
+
+    def import_selection(self, selection: List[Any]) -> None:
+        """Triggers the import selection tool.
+
+        Parameters
+        ----------
+        selection: list[Any]
+            A list containing the objects to import into the selection
+
+        Notes
+        -----
+        ToDo: import from an astropy table
+
+        """
+        self.send({"event_name": "import_selection", "selection": selection})
 
     def rectangular_selection(self) -> None:
         """Trigger the rectangular selection tool.

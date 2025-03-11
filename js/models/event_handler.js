@@ -279,6 +279,7 @@ export default class EventHandler {
       change_colormap: this.messageHandler.handleChangeColormap,
       get_JPG_thumbnail: this.messageHandler.handleGetJPGThumbnail,
       trigger_selection: this.messageHandler.handleTriggerSelection,
+      import_selection: this.messageHandler.handleImportSelection,
       add_table: this.messageHandler.handleAddTable,
     };
 

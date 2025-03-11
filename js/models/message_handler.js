@@ -155,6 +155,10 @@ export default class MessageHandler {
     this.aladin.select(selectionType);
   }
 
+  handleImportSelection(msg) {
+    this.aladin.importSelection(msg["selection"]);
+  }
+
   handleAddTable(msg, buffers) {
     const options = convertOptionNamesToCamelCase(msg["options"] || {});
     const buffer = buffers[0].buffer;
