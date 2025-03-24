@@ -76,7 +76,7 @@ SupportedRegion = Union[
     Regions,
 ]
 
-SupportedSelectionRegion = Union[CircleSkyRegion, RectangleSkyRegion]
+SupportedSelectionRegion = List[Union[CircleSkyRegion, RectangleSkyRegion]]
 
 
 def widget_should_be_loaded(function: Callable) -> Callable:
@@ -179,7 +179,10 @@ class Aladin(anywidget.AnyWidget):
         trait=traitlets.List(trait=traitlets.Any()),
         help="A list of catalogs selected by the user.",
     ).tag(sync=True)
-    _selected_region = traitlets.Dict().tag(sync=True)
+    _selected_regions = traitlets.List(
+        trait=traitlets.Dict(),
+        help="A list of regions selected by the user in a given session.",
+    ).tag(sync=True)
     # listener callback is on the python side and contains functions to link to events
     listener_callback: ClassVar[Dict[str, callable]] = {}
 
@@ -268,13 +271,13 @@ class Aladin(anywidget.AnyWidget):
         return catalogs
 
     @property
-    def selected_region(self) -> SupportedSelectionRegion:
-        """The region selected by the user.
+    def selected_regions(self) -> SupportedSelectionRegion:
+        """The regions selected by the user in a given session.
 
         Returns
         -------
         _______
-        `~regions.CircleSkyRegion`, `~regions.RectangleSkyRegion`
+        List[`~regions.CircleSkyRegion`, `~regions.RectangleSkyRegion`]
             An astropy region object representing the region selected by the user.
 
         """
@@ -284,37 +287,43 @@ class Aladin(anywidget.AnyWidget):
                 "'pip install regions'."
             )
 
-        region_type = self._selected_region.get("type", None)
-        startCoo = self._selected_region.get("startCoo", None)
-        endCoo = self._selected_region.get("endCoo", None)
+        selected_regions = []
+        for region in self._selected_regions:
+            region_type = region.get("type", None)
+            startCoo = region.get("startCoo", None)
+            endCoo = region.get("endCoo", None)
 
-        if not region_type:
-            return None
+            if region_type == "circle":
+                r2 = (endCoo["x"] - startCoo["x"]) * (endCoo["x"] - startCoo["x"]) + (
+                    endCoo["y"] - startCoo["y"]
+                ) * (endCoo["y"] - startCoo["y"])
+                r = math.sqrt(r2)
 
-        if region_type == "circle":
-            r2 = (endCoo["x"] - startCoo["x"]) * (endCoo["x"] - startCoo["x"]) + (
-                endCoo["y"] - startCoo["y"]
-            ) * (endCoo["y"] - startCoo["y"])
-            r = math.sqrt(r2)
+                center = SkyCoord(
+                    startCoo["x"], startCoo["y"], unit="deg", frame="icrs"
+                )
 
-            center = SkyCoord(startCoo["x"], startCoo["y"], unit="deg", frame="icrs")
+                selected_regions.append(CircleSkyRegion(center, radius=r * u.deg))
 
-            return CircleSkyRegion(center, radius=r * u.deg)
+            elif region_type == "rect":
+                w = abs(endCoo["x"] - startCoo["x"])
+                h = abs(endCoo["y"] - startCoo["y"])
+                x = (endCoo["x"] + startCoo["x"]) / 2
+                y = (endCoo["y"] + startCoo["y"]) / 2
 
-        if region_type == "rect":
-            w = abs(endCoo["x"] - startCoo["x"])
-            h = abs(endCoo["y"] - startCoo["y"])
-            x = (endCoo["x"] + startCoo["x"]) / 2
-            y = (endCoo["y"] + startCoo["y"]) / 2
+                center = SkyCoord(x, y, unit="deg", frame="icrs")
 
-            center = SkyCoord(x, y, unit="deg", frame="icrs")
+                selected_regions.append(
+                    RectangleSkyRegion(center, width=w * u.deg, height=h * u.deg)
+                )
 
-            return RectangleSkyRegion(center, width=w * u.deg, height=h * u.deg)
+            else:
+                raise ValueError(
+                    f"Unsupported region selection shape: {region_type}. \
+                        Supported shapes are 'circle' and 'rect'."
+                )
 
-        raise ValueError(
-            f"Unsupported region selection shape: {region_type}. \
-                  Supported shapes are 'circle' and 'rect'."
-        )
+        return selected_regions
 
     @property
     def height(self) -> int:
