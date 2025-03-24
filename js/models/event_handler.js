@@ -259,7 +259,7 @@ export default class EventHandler {
       let selectionType = this.aladin.view.selector.select.constructor.name;
 
       this.model.set("_selected_region", {
-        type: selectionType == "pg" ? "circle" : "rect",
+        type: selectionType == "pg" ? "rect" : "circle",
         startCoo: {
           x: startCooWorld[0],
           y: startCooWorld[1],
