@@ -9,6 +9,7 @@ from collections.abc import Callable, Iterable
 import functools
 from json import JSONDecodeError
 import io
+import math
 import pathlib
 from pathlib import Path
 import time
@@ -16,6 +17,7 @@ from typing import ClassVar, Dict, Final, List, Optional, Tuple, Union
 import warnings
 
 import anywidget
+from astropy import units as u
 from astropy.coordinates import SkyCoord, Angle, Longitude, Latitude
 from astropy.coordinates.name_resolve import NameResolveError
 from astropy.table.table import QTable
@@ -73,6 +75,8 @@ SupportedRegion = Union[
     RectangleSkyRegion,
     Regions,
 ]
+
+SupportedSelectionRegion = Union[CircleSkyRegion, RectangleSkyRegion]
 
 
 def widget_should_be_loaded(function: Callable) -> Callable:
@@ -175,6 +179,7 @@ class Aladin(anywidget.AnyWidget):
         trait=traitlets.List(trait=traitlets.Any()),
         help="A list of catalogs selected by the user.",
     ).tag(sync=True)
+    _selected_region = traitlets.Dict().tag(sync=True)
     # listener callback is on the python side and contains functions to link to events
     listener_callback: ClassVar[Dict[str, callable]] = {}
 
@@ -261,6 +266,55 @@ class Aladin(anywidget.AnyWidget):
             objects_data = [obj["data"] for obj in selected_object]
             catalogs.append(Table(objects_data))
         return catalogs
+
+    @property
+    def selected_region(self) -> SupportedSelectionRegion:
+        """The region selected by the user.
+
+        Returns
+        -------
+        _______
+        `~regions.CircleSkyRegion`, `~regions.RectangleSkyRegion`
+            An astropy region object representing the region selected by the user.
+
+        """
+        if Region is None:
+            raise ModuleNotFoundError(
+                "To read regions objects, you need to install the regions library with "
+                "'pip install regions'."
+            )
+
+        region_type = self._selected_region.get("type", None)
+        startCoo = self._selected_region.get("startCoo", None)
+        endCoo = self._selected_region.get("endCoo", None)
+
+        if not region_type:
+            return None
+
+        if region_type == "circle":
+            r2 = (endCoo["x"] - startCoo["x"]) * (endCoo["x"] - startCoo["x"]) + (
+                endCoo["y"] - startCoo["y"]
+            ) * (endCoo["y"] - startCoo["y"])
+            r = math.sqrt(r2)
+
+            center = SkyCoord(startCoo["x"], startCoo["y"], unit="deg", frame="icrs")
+
+            return CircleSkyRegion(center, radius=r * u.deg)
+
+        if region_type == "rect":
+            w = abs(endCoo["x"] - startCoo["x"])
+            h = abs(endCoo["y"] - startCoo["y"])
+            x = (endCoo["x"] + startCoo["x"]) / 2
+            y = (endCoo["y"] + startCoo["y"]) / 2
+
+            center = SkyCoord(x, y, unit="deg", frame="icrs")
+
+            return RectangleSkyRegion(center, width=w * u.deg, height=h * u.deg)
+
+        raise ValueError(
+            f"Unsupported region selection shape: {region_type}. \
+                  Supported shapes are 'circle' and 'rect'."
+        )
 
     @property
     def height(self) -> int:
