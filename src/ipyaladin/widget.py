@@ -234,6 +234,7 @@ class Aladin(anywidget.AnyWidget):
         # set the traitlet
         self._init_options = init_options
         self.on_msg(self._handle_custom_message)
+        self._graphic_regions_list = []
 
     def _handle_custom_message(self, _: any, message: dict, buffers: any) -> None:
         event_type = message["event_type"]
@@ -324,6 +325,23 @@ class Aladin(anywidget.AnyWidget):
                 )
 
         return selected_regions
+
+    @property
+    def graphic_regions_list(self) -> SupportedRegion:
+        """A list of all of the graphic regions that have been drawn.
+
+        Returns
+        -------
+        _______
+        `~regions.CircleSkyRegion`, `~regions.EllipseSkyRegion`,
+        `~regions.LineSkyRegion`,`~regions.PolygonSkyRegion`,
+        `~regions.RectangleSkyRegion`, `~regions.Regions`, or a list of these.
+            The region(s) to add in Aladin Lite. It can be given as a supported region
+            or a list of regions from the
+            `regions package <https://astropy-regions.readthedocs.io>`_.
+
+        """
+        return self._graphic_regions_list
 
     @property
     def height(self) -> int:
@@ -877,6 +895,9 @@ class Aladin(anywidget.AnyWidget):
             region_list = [region]
         else:
             region_list = region
+
+        # keep track of all of the regions we have drawn
+        self._graphic_regions_list.append(region_list)
 
         regions_infos = []
         for region_element in region_list:
