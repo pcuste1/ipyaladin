@@ -258,17 +258,21 @@ export default class EventHandler {
       // ToDo: this is a placeholder for something more smarter
       let selectionType = this.aladin.view.selector.select.constructor.name;
 
-      this.model.set("_selected_region", {
-        type: selectionType == "pg" ? "rect" : "circle",
-        startCoo: {
-          x: startCooWorld[0],
-          y: startCooWorld[1],
+      var _selected_regions = this.model.get("_selected_regions") ?? [];
+      this.model.set("_selected_regions", [
+        ..._selected_regions,
+        {
+          type: selectionType == "pg" ? "rect" : "circle",
+          startCoo: {
+            x: startCooWorld[0],
+            y: startCooWorld[1],
+          },
+          endCoo: {
+            x: endCooWorld[0],
+            y: endCooWorld[1],
+          },
         },
-        endCoo: {
-          x: endCooWorld[0],
-          y: endCooWorld[1],
-        },
-      });
+      ]);
       this.model.save_changes();
     });
 
