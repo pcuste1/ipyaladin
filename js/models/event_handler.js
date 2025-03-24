@@ -244,6 +244,32 @@ export default class EventHandler {
         event_type: "select",
         content: objectsData,
       });
+
+      let startCooPix = this.aladin.view.selector.select.startCoo;
+      let startCooWorld = this.aladin.pix2world(
+        startCooPix.x,
+        startCooPix.y,
+        0,
+      );
+
+      let endCooPix = this.aladin.view.selector.select.coo;
+      let endCooWorld = this.aladin.pix2world(endCooPix.x, endCooPix.y, 0);
+
+      // ToDo: this is a placeholder for something more smarter
+      let selectionType = this.aladin.view.selector.select.constructor.name;
+
+      this.model.set("_selected_region", {
+        type: selectionType == "pg" ? "circle" : "rect",
+        startCoo: {
+          x: startCooWorld[0],
+          y: startCooWorld[1],
+        },
+        endCoo: {
+          x: endCooWorld[0],
+          y: endCooWorld[1],
+        },
+      });
+      this.model.save_changes();
     });
 
     /* Aladin functionalities */
