@@ -1,5 +1,6 @@
 import MessageHandler from "./message_handler";
 import { divNumber, setDivNumber, Lock, setDivHeight } from "../utils";
+import { SelectorToJson } from "./selection_handler";
 
 export default class EventHandler {
   /**
@@ -245,33 +246,9 @@ export default class EventHandler {
         content: objectsData,
       });
 
-      let startCooPix = this.aladin.view.selector.select.startCoo;
-      let startCooWorld = this.aladin.pix2world(
-        startCooPix.x,
-        startCooPix.y,
-        0,
-      );
-
-      let endCooPix = this.aladin.view.selector.select.coo;
-      let endCooWorld = this.aladin.pix2world(endCooPix.x, endCooPix.y, 0);
-
-      // ToDo: this is a placeholder for something more smarter
-      let selectionType = this.aladin.view.selector.select.constructor.name;
-
-      var _selected_regions = this.model.get("_selected_regions") ?? [];
       this.model.set("_selected_regions", [
-        ..._selected_regions,
-        {
-          type: selectionType == "pg" ? "rect" : "circle",
-          startCoo: {
-            x: startCooWorld[0],
-            y: startCooWorld[1],
-          },
-          endCoo: {
-            x: endCooWorld[0],
-            y: endCooWorld[1],
-          },
-        },
+        ...(this.model.get("_selected_regions") ?? []),
+        SelectorToJson(this.aladin),
       ]);
       this.model.save_changes();
     });

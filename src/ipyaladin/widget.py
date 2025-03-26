@@ -76,7 +76,9 @@ SupportedRegion = Union[
     Regions,
 ]
 
-SupportedSelectionRegion = List[Union[CircleSkyRegion, RectangleSkyRegion]]
+SupportedSelectionRegion = List[
+    Union[CircleSkyRegion, RectangleSkyRegion, PolygonSkyRegion]
+]
 
 
 def widget_should_be_loaded(function: Callable) -> Callable:
@@ -291,10 +293,10 @@ class Aladin(anywidget.AnyWidget):
         selected_regions = []
         for region in self._selected_regions:
             region_type = region.get("type", None)
-            startCoo = region.get("startCoo", None)
-            endCoo = region.get("endCoo", None)
 
             if region_type == "circle":
+                startCoo = region.get("startCoo", None)
+                endCoo = region.get("endCoo", None)
                 r2 = (endCoo["x"] - startCoo["x"]) * (endCoo["x"] - startCoo["x"]) + (
                     endCoo["y"] - startCoo["y"]
                 ) * (endCoo["y"] - startCoo["y"])
@@ -307,6 +309,8 @@ class Aladin(anywidget.AnyWidget):
                 selected_regions.append(CircleSkyRegion(center, radius=r * u.deg))
 
             elif region_type == "rect":
+                startCoo = region.get("startCoo", None)
+                endCoo = region.get("endCoo", None)
                 w = abs(endCoo["x"] - startCoo["x"])
                 h = abs(endCoo["y"] - startCoo["y"])
                 x = (endCoo["x"] + startCoo["x"]) / 2
@@ -318,10 +322,21 @@ class Aladin(anywidget.AnyWidget):
                     RectangleSkyRegion(center, width=w * u.deg, height=h * u.deg)
                 )
 
+            elif region_type == "poly":
+                coos = region.get("coos", None)
+
+                vertices = SkyCoord(
+                    [c["x"] for c in coos],
+                    [c["y"] for c in coos],
+                    unit="deg",
+                    frame="icrs",
+                )
+                selected_regions.append(PolygonSkyRegion(vertices=vertices))
+
             else:
                 raise ValueError(
                     f"Unsupported region selection shape: {region_type}. \
-                        Supported shapes are 'circle' and 'rect'."
+                        Supported shapes are 'circle', 'rect', or 'poly'."
                 )
 
         return selected_regions
