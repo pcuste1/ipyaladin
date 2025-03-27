@@ -1,8 +1,8 @@
 /**
  * Converts the current aladin selector object to a json representation of the
  * selector with coordinates in world coordinates.
- * @param {*} aladin - The aladin-lite instance
- * @returns {*} A json representation of the selector object w
+ * @param aladin - The aladin-lite instance
+ * @returns A json representation of the selector object w
  */
 export function SelectorToJson(aladin) {
   let selector = aladin.view.selector.select;
@@ -21,8 +21,8 @@ export function SelectorToJson(aladin) {
 /**
  * Converts a CircleSelector object to a json representation of the
  * selector with coordinates in world coordinates.
- * @param {*} selector - CircleSelect object
- * @param {*} aladin - The aladin-lite instance
+ * @param selector - CircleSelect object
+ * @param aladin - The aladin-lite instance
  * @returns A json representation of a CircleSelect object
  */
 function CircleSelectorToJson(selector, aladin) {
@@ -50,8 +50,8 @@ function CircleSelectorToJson(selector, aladin) {
 /**
  * Converts a RectSelector object to a json representation of the
  * selector with coordinates in world coordinates.
- * @param {*} selector - RectSelect object
- * @param {*} aladin - The aladin-lite instance
+ * @param selector - RectSelect object
+ * @param aladin - The aladin-lite instance
  * @returns A json representation of a CircleSelect object
  */
 function RectangleSelectorToJson(selector, aladin) {
@@ -79,9 +79,9 @@ function RectangleSelectorToJson(selector, aladin) {
 /**
  * Converts a PolySelector object to a json representation of the
  * selector with coordinates in world coordinates.
- * @param {*} selector - PolySelect object
- * @param {*} aladin - The aladin-lite instance
- * @returns {*} A json representation of a CircleSelect object
+ * @param selector - PolySelect object
+ * @param aladin - The aladin-lite instance
+ * @returns A json representation of a CircleSelect object
  */
 function PolySelectorToJson(selector, aladin) {
   return {
