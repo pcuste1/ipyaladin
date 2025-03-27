@@ -137,7 +137,6 @@ function SelectCircleRegion(msg, selector, aladin) {
       y: endCooPix[1],
     },
   });
-  console.log("hello world");
 }
 
 function SelectRectRegion(msg, selector, aladin) {
