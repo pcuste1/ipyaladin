@@ -1027,6 +1027,86 @@ class Aladin(anywidget.AnyWidget):
             raise ValueError("selection_type must be 'circle' or 'rectangle'")
         self.send({"event_name": "trigger_selection", "selection_type": selection_type})
 
+    def select_region(self, region: SupportedSelectionRegion) -> None:
+        """Triggers Aladin Lite to select a given astropy region.
+
+        Parameters
+        ----------
+        __________
+        region: `~regions.CircleSkyRegion`, `~regions.PolygonSkyRegion`, or a
+        `~regions.RectangleSkyRegion`
+            The selection region to add in Aladin Lite. It can be given as a supported
+            region from the `regions package <https://astropy-regions.readthedocs.io>`_.
+        """
+        if Region is None:
+            raise ModuleNotFoundError(
+                "To read regions objects, you need to install the regions library with "
+                "'pip install regions'."
+            )
+
+        event_name = "trigger_select_region"
+        if type(region) is CircleSkyRegion:
+            ra = region.center.ra.value
+            dec = region.center.dec.value
+            radius = region.radius.value
+            self.send(
+                {
+                    "event_name": event_name,
+                    "selection_type": "circle",
+                    "startCoo": {
+                        "ra": ra,
+                        "dec": dec,
+                    },
+                    "endCoo": {"ra": ra + radius, "dec": dec},
+                }
+            )
+
+        elif type(region) is RectangleSkyRegion:
+            ra = region.center.ra.value
+            dec = region.center.dec.value
+            angle = region.angle.value
+            width = region.width.value
+            height = region.height.value
+
+            # https://stackoverflow.com/questions/41898990/find-corners-of-a-rotated-rectangle-given-its-center-point-and-rotation  # noqa: E501
+            self.send(
+                {
+                    "event_name": event_name,
+                    "selection_type": "rect",
+                    "startCoo": {
+                        "ra": ra
+                        + ((width / 2) * math.cos(angle))
+                        - ((height / 2) * math.sin(angle)),
+                        "dec": dec
+                        + ((width / 2) * math.sin(angle))
+                        + ((height / 2) * math.cos(angle)),
+                    },
+                    "endCoo": {
+                        "ra": ra
+                        - ((width / 2) * math.cos(angle))
+                        + ((height / 2) * math.sin(angle)),
+                        "dec": dec
+                        - ((width / 2) * math.sin(angle))
+                        - ((height / 2) * math.cos(angle)),
+                    },
+                }
+            )
+
+        elif type(region) is PolygonSkyRegion:
+            self.send(
+                {
+                    "event_name": event_name,
+                    "selection_type": "poly",
+                    "coos": [
+                        {
+                            "ra": coo.ra.value,
+                            "dec": coo.dec.value,
+                        }
+                        for coo in region.vertices
+                    ],
+                }
+            )
+
     def rectangular_selection(self) -> None:
         """Trigger the rectangular selection tool.
 
