@@ -236,7 +236,7 @@ class Aladin(anywidget.AnyWidget):
         # set the traitlet
         self._init_options = init_options
         self.on_msg(self._handle_custom_message)
-        self._graphic_regions_list = []
+        self._graphic_overlays = []
 
     def _handle_custom_message(self, _: any, message: dict, buffers: any) -> None:
         event_type = message["event_type"]
@@ -342,8 +342,8 @@ class Aladin(anywidget.AnyWidget):
         return selected_regions
 
     @property
-    def graphic_regions_list(self) -> SupportedRegion:
-        """A list of all of the graphic regions that have been drawn.
+    def graphic_overlays(self) -> SupportedRegion:
+        """A list of all of the graphic overlays that have been drawn.
 
         Returns
         -------
@@ -356,7 +356,7 @@ class Aladin(anywidget.AnyWidget):
             `regions package <https://astropy-regions.readthedocs.io>`_.
 
         """
-        return self._graphic_regions_list
+        return self._graphic_overlays
 
     @property
     def height(self) -> int:
@@ -911,8 +911,8 @@ class Aladin(anywidget.AnyWidget):
         else:
             region_list = region
 
-        # keep track of all of the regions we have drawn
-        self._graphic_regions_list.append(region_list)
+        # keep track of all of the graphic overlays we have drawn
+        self._graphic_overlays.append(region_list)
 
         regions_infos = []
         for region_element in region_list:
