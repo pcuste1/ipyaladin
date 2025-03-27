@@ -297,13 +297,15 @@ class Aladin(anywidget.AnyWidget):
             if region_type == "circle":
                 startCoo = region.get("startCoo", None)
                 endCoo = region.get("endCoo", None)
-                r2 = (endCoo["x"] - startCoo["x"]) * (endCoo["x"] - startCoo["x"]) + (
-                    endCoo["y"] - startCoo["y"]
-                ) * (endCoo["y"] - startCoo["y"])
+                r2 = (endCoo["ra"] - startCoo["ra"]) * (
+                    endCoo["ra"] - startCoo["ra"]
+                ) + (endCoo["dec"] - startCoo["dec"]) * (
+                    endCoo["dec"] - startCoo["dec"]
+                )
                 r = math.sqrt(r2)
 
                 center = SkyCoord(
-                    startCoo["x"], startCoo["y"], unit="deg", frame="icrs"
+                    startCoo["ra"], startCoo["dec"], unit="deg", frame="icrs"
                 )
 
                 selected_regions.append(CircleSkyRegion(center, radius=r * u.deg))
@@ -311,10 +313,10 @@ class Aladin(anywidget.AnyWidget):
             elif region_type == "rect":
                 startCoo = region.get("startCoo", None)
                 endCoo = region.get("endCoo", None)
-                w = abs(endCoo["x"] - startCoo["x"])
-                h = abs(endCoo["y"] - startCoo["y"])
-                x = (endCoo["x"] + startCoo["x"]) / 2
-                y = (endCoo["y"] + startCoo["y"]) / 2
+                w = abs(endCoo["ra"] - startCoo["ra"])
+                h = abs(endCoo["dec"] - startCoo["dec"])
+                x = (endCoo["ra"] + startCoo["ra"]) / 2
+                y = (endCoo["dec"] + startCoo["dec"]) / 2
 
                 center = SkyCoord(x, y, unit="deg", frame="icrs")
 
@@ -326,8 +328,8 @@ class Aladin(anywidget.AnyWidget):
                 coos = region.get("coos", None)
 
                 vertices = SkyCoord(
-                    [c["x"] for c in coos],
-                    [c["y"] for c in coos],
+                    [c["ra"] for c in coos],
+                    [c["dec"] for c in coos],
                     unit="deg",
                     frame="icrs",
                 )

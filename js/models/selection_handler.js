@@ -37,12 +37,12 @@ function CircleSelectorToJson(selector, aladin) {
   return {
     type: "circle",
     startCoo: {
-      x: startCooWorld[0],
-      y: startCooWorld[1],
+      ra: startCooWorld[0],
+      dec: startCooWorld[1],
     },
     endCoo: {
-      x: endCooWorld[0],
-      y: endCooWorld[1],
+      ra: endCooWorld[0],
+      dec: endCooWorld[1],
     },
   };
 }
@@ -66,12 +66,12 @@ function RectangleSelectorToJson(selector, aladin) {
   return {
     type: "rect",
     startCoo: {
-      x: startCooWorld[0],
-      y: startCooWorld[1],
+      ra: startCooWorld[0],
+      dec: startCooWorld[1],
     },
     endCoo: {
-      x: endCooWorld[0],
-      y: endCooWorld[1],
+      ra: endCooWorld[0],
+      dec: endCooWorld[1],
     },
   };
 }
@@ -89,8 +89,8 @@ function PolySelectorToJson(selector, aladin) {
     coos: selector.coos.map((coo) => {
       let cooWorld = aladin.pix2world(coo.x, coo.y, 0);
       return {
-        x: cooWorld[0],
-        y: cooWorld[1],
+        ra: cooWorld[0],
+        dec: cooWorld[1],
       };
     }),
   };
