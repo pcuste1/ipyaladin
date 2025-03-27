@@ -1,3 +1,9 @@
+/**
+ * Converts the current aladin selector object to a json representation of the
+ * selector with coordinates in world coordinates.
+ * @param {*} aladin - The aladin-lite instance
+ * @returns {*} A json representation of the selector object w
+ */
 export function SelectorToJson(aladin) {
   let selector = aladin.view.selector.select;
   switch (selector.constructor.name) {
@@ -12,7 +18,14 @@ export function SelectorToJson(aladin) {
   }
 }
 
-export function CircleSelectorToJson(selector, aladin) {
+/**
+ * Converts a CircleSelector object to a json representation of the
+ * selector with coordinates in world coordinates.
+ * @param {*} selector - CircleSelect object
+ * @param {*} aladin - The aladin-lite instance
+ * @returns A json representation of a CircleSelect object
+ */
+function CircleSelectorToJson(selector, aladin) {
   let startCooWorld = aladin.pix2world(
     selector.startCoo.x,
     selector.startCoo.y,
@@ -34,7 +47,14 @@ export function CircleSelectorToJson(selector, aladin) {
   };
 }
 
-export function RectangleSelectorToJson(selector, aladin) {
+/**
+ * Converts a RectSelector object to a json representation of the
+ * selector with coordinates in world coordinates.
+ * @param {*} selector - RectSelect object
+ * @param {*} aladin - The aladin-lite instance
+ * @returns A json representation of a CircleSelect object
+ */
+function RectangleSelectorToJson(selector, aladin) {
   let startCooWorld = aladin.pix2world(
     selector.startCoo.x,
     selector.startCoo.y,
@@ -56,7 +76,14 @@ export function RectangleSelectorToJson(selector, aladin) {
   };
 }
 
-export function PolySelectorToJson(selector, aladin) {
+/**
+ * Converts a PolySelector object to a json representation of the
+ * selector with coordinates in world coordinates.
+ * @param {*} selector - PolySelect object
+ * @param {*} aladin - The aladin-lite instance
+ * @returns {*} A json representation of a CircleSelect object
+ */
+function PolySelectorToJson(selector, aladin) {
   return {
     type: "poly",
     coos: selector.coos.map((coo) => {
