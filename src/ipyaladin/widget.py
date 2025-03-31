@@ -296,35 +296,15 @@ class Aladin(anywidget.AnyWidget):
 
             if region_type == "circle":
                 startCoo = region.get("startCoo", None)
-                endCoo = region.get("endCoo", None)
-                r2 = (endCoo["ra"] - startCoo["ra"]) * (
-                    endCoo["ra"] - startCoo["ra"]
-                ) + (endCoo["dec"] - startCoo["dec"]) * (
-                    endCoo["dec"] - startCoo["dec"]
-                )
-                r = math.sqrt(r2)
+                radius = region.get("radius", None)
 
                 center = SkyCoord(
                     startCoo["ra"], startCoo["dec"], unit="deg", frame="icrs"
                 )
 
-                selected_regions.append(CircleSkyRegion(center, radius=r * u.deg))
+                selected_regions.append(CircleSkyRegion(center, radius=radius * u.deg))
 
-            elif region_type == "rect":
-                startCoo = region.get("startCoo", None)
-                endCoo = region.get("endCoo", None)
-                w = abs(endCoo["ra"] - startCoo["ra"])
-                h = abs(endCoo["dec"] - startCoo["dec"])
-                x = (endCoo["ra"] + startCoo["ra"]) / 2
-                y = (endCoo["dec"] + startCoo["dec"]) / 2
-
-                center = SkyCoord(x, y, unit="deg", frame="icrs")
-
-                selected_regions.append(
-                    RectangleSkyRegion(center, width=w * u.deg, height=h * u.deg)
-                )
-
-            elif region_type == "poly":
+            elif region_type in ["poly", "rect"]:
                 coos = region.get("coos", None)
 
                 vertices = SkyCoord(

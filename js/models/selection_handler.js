@@ -34,16 +34,20 @@ function CircleSelectorToJson(selector, aladin) {
 
   let endCooWorld = aladin.pix2world(selector.coo.x, selector.coo.y, 0);
 
+  let radius = aladin.angularDist(
+    startCooWorld[0],
+    startCooWorld[1],
+    endCooWorld[0],
+    endCooWorld[1],
+  );
+
   return {
     type: "circle",
     startCoo: {
       ra: startCooWorld[0],
       dec: startCooWorld[1],
     },
-    endCoo: {
-      ra: endCooWorld[0],
-      dec: endCooWorld[1],
-    },
+    radius: radius,
   };
 }
 
@@ -55,24 +59,34 @@ function CircleSelectorToJson(selector, aladin) {
  * @returns A json representation of a CircleSelect object
  */
 function RectangleSelectorToJson(selector, aladin) {
-  let startCooWorld = aladin.pix2world(
-    selector.startCoo.x,
-    selector.startCoo.y,
-    0,
-  );
-
-  let endCooWorld = aladin.pix2world(selector.coo.x, selector.coo.y, 0);
+  let coos = [
+    [
+      Math.min(selector.startCoo.x, selector.coo.x),
+      Math.min(selector.startCoo.y, selector.coo.y),
+    ],
+    [
+      Math.max(selector.startCoo.x, selector.coo.x),
+      Math.min(selector.startCoo.y, selector.coo.y),
+    ],
+    [
+      Math.max(selector.startCoo.x, selector.coo.x),
+      Math.max(selector.startCoo.y, selector.coo.y),
+    ],
+    [
+      Math.min(selector.startCoo.x, selector.coo.x),
+      Math.max(selector.startCoo.y, selector.coo.y),
+    ],
+  ];
 
   return {
     type: "rect",
-    startCoo: {
-      ra: startCooWorld[0],
-      dec: startCooWorld[1],
-    },
-    endCoo: {
-      ra: endCooWorld[0],
-      dec: endCooWorld[1],
-    },
+    coos: coos.map((coo) => {
+      let cooWorld = aladin.pix2world(coo[0], coo[1], 0);
+      return {
+        ra: cooWorld[0],
+        dec: cooWorld[1],
+      };
+    }),
   };
 }
 
