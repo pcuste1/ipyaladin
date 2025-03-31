@@ -32,13 +32,11 @@ function CircleSelectorToJson(selector, aladin) {
     0,
   );
 
-  let endCooWorld = aladin.pix2world(selector.coo.x, selector.coo.y, 0);
-
   let radius = aladin.angularDist(
-    startCooWorld[0],
-    startCooWorld[1],
-    endCooWorld[0],
-    endCooWorld[1],
+    selector.startCoo.x,
+    selector.startCoo.y,
+    selector.coo.x,
+    selector.coo.y,
   );
 
   return {
