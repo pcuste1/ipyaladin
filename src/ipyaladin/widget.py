@@ -1050,6 +1050,8 @@ class Aladin(anywidget.AnyWidget):
             width = region.width.value
             height = region.height.value
 
+            # Calculate the corners of the rectangle selection region from the provided
+            # ra, dec, angle, width, and height
             # https://stackoverflow.com/questions/41898990/find-corners-of-a-rotated-rectangle-given-its-center-point-and-rotation  # noqa: E501
             self.send(
                 {
