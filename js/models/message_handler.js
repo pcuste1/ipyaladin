@@ -1,4 +1,5 @@
 import { convertOptionNamesToCamelCase } from "../utils";
+import { SelectRegion } from "./selection_handler";
 import A from "../aladin_lite";
 
 let imageCount = 0;
@@ -153,6 +154,10 @@ export default class MessageHandler {
     if (selectionType === "rectangle") selectionType = "rect";
     else if (selectionType === "polygon") selectionType = "poly";
     this.aladin.select(selectionType);
+  }
+
+  handleTriggerSelectRegion(msg) {
+    SelectRegion(msg, this.aladin);
   }
 
   handleAddTable(msg, buffers) {
