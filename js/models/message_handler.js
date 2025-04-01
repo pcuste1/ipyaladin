@@ -155,6 +155,27 @@ export default class MessageHandler {
     this.aladin.select(selectionType);
   }
 
+  handleTriggerSelectionByTable(msg) {
+    let sources = msg["table"];
+    let keys = msg["keys"];
+    let sourcesByCatalog = this.aladin.view.catalogs
+      .map((cat) => {
+        if (!cat.isShowing) {
+          return;
+        }
+        return cat.getSources().filter((source) =>
+          sources.some((s) =>
+            keys.every((key) => {
+              return s[key] == source.data[key];
+            }),
+          ),
+        );
+      })
+      .filter((n) => n.length);
+
+    this.aladin.view.selectObjects(sourcesByCatalog);
+  }
+
   handleAddTable(msg, buffers) {
     const options = convertOptionNamesToCamelCase(msg["options"] || {});
     const buffer = buffers[0].buffer;

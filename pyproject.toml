@@ -24,7 +24,8 @@ docs = ["autoapi",
     "sphinx-collections",
     "sphinx-copybutton",
     "sphinx-gallery",
-    "pydata-sphinx-theme"
+    "pydata-sphinx-theme",
+    "pandas"
 ]
 
 # automatically add the dev feature to the default env (e.g., hatch shell)
