@@ -928,6 +928,27 @@ class Aladin(anywidget.AnyWidget):
             raise ValueError("selection_type must be 'circle' or 'rectangle'")
         self.send({"event_name": "trigger_selection", "selection_type": selection_type})
 
+    def select_table(self, table: Table, keys: List[str]) -> None:
+        """Trigger selection of sources included in the user defined table.
+
+        Parameters
+        ----------
+        __________
+        table: Table
+            The astropy table containing the sources the user wishes to select.
+        keys: List[str]
+            The list of keys in the astropy table to use to identifiy a source.
+
+        """
+        table_dict = table.to_pandas()[keys].to_dict("records")
+        self.send(
+            {
+                "event_name": "trigger_selection_by_table",
+                "table": table_dict,
+                "keys": keys,
+            }
+        )
+
     def rectangular_selection(self) -> None:
         """Trigger the rectangular selection tool.
 
