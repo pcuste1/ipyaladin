@@ -245,10 +245,12 @@ export default class EventHandler {
         event_type: "select",
         content: objectsData,
       });
+    });
 
+    this.aladin.on("regionSelected", (region) => {
       this.model.set("_selected_regions", [
         ...(this.model.get("_selected_regions") ?? []),
-        SelectorToJson(this.aladin),
+        region,
       ]);
       this.model.save_changes();
     });
