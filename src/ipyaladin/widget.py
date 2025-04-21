@@ -9,6 +9,7 @@ from collections.abc import Callable, Iterable
 import functools
 from json import JSONDecodeError
 import io
+import math
 import pathlib
 from pathlib import Path
 import time
@@ -16,6 +17,7 @@ from typing import ClassVar, Dict, Final, List, Optional, Tuple, Union
 import warnings
 
 import anywidget
+from astropy import units as u
 from astropy.coordinates import SkyCoord, Angle, Longitude, Latitude
 from astropy.coordinates.name_resolve import NameResolveError
 from astropy.table.table import QTable
@@ -72,6 +74,10 @@ SupportedRegion = Union[
     PolygonSkyRegion,
     RectangleSkyRegion,
     Regions,
+]
+
+SupportedSelectionRegion = List[
+    Union[CircleSkyRegion, RectangleSkyRegion, PolygonSkyRegion]
 ]
 
 
@@ -175,6 +181,10 @@ class Aladin(anywidget.AnyWidget):
         trait=traitlets.List(trait=traitlets.Any()),
         help="A list of catalogs selected by the user.",
     ).tag(sync=True)
+    _selected_regions = traitlets.List(
+        trait=traitlets.Dict(),
+        help="A list of regions selected by the user in a given session.",
+    ).tag(sync=True)
     # listener callback is on the python side and contains functions to link to events
     listener_callback: ClassVar[Dict[str, callable]] = {}
 
@@ -226,6 +236,7 @@ class Aladin(anywidget.AnyWidget):
         # set the traitlet
         self._init_options = init_options
         self.on_msg(self._handle_custom_message)
+        self._graphic_overlays = []
 
     def _handle_custom_message(self, _: any, message: dict, buffers: any) -> None:
         event_type = message["event_type"]
@@ -261,6 +272,73 @@ class Aladin(anywidget.AnyWidget):
             objects_data = [obj["data"] for obj in selected_object]
             catalogs.append(Table(objects_data))
         return catalogs
+
+    @property
+    def selected_regions(self) -> SupportedSelectionRegion:
+        """The regions selected by the user in a given session.
+
+        Returns
+        -------
+        _______
+        List[`~regions.CircleSkyRegion`, `~regions.RectangleSkyRegion`]
+            An astropy region object representing the region selected by the user.
+
+        """
+        if Region is None:
+            raise ModuleNotFoundError(
+                "To read regions objects, you need to install the regions library with "
+                "'pip install regions'."
+            )
+
+        selected_regions = []
+        for region in self._selected_regions:
+            region_type = region.get("type", None)
+
+            if region_type == "circle":
+                startCoo = region.get("startCoo", None)
+                radius = region.get("radius", None)
+
+                center = SkyCoord(
+                    startCoo["ra"], startCoo["dec"], unit="deg", frame="icrs"
+                )
+
+                selected_regions.append(CircleSkyRegion(center, radius=radius * u.deg))
+
+            elif region_type in ["poly", "rect"]:
+                coos = region.get("coos", None)
+
+                vertices = SkyCoord(
+                    [c["ra"] for c in coos],
+                    [c["dec"] for c in coos],
+                    unit="deg",
+                    frame="icrs",
+                )
+                selected_regions.append(PolygonSkyRegion(vertices=vertices))
+
+            else:
+                raise ValueError(
+                    f"Unsupported region selection shape: {region_type}. \
+                        Supported shapes are 'circle', 'rect', or 'poly'."
+                )
+
+        return selected_regions
+
+    @property
+    def graphic_overlays(self) -> SupportedRegion:
+        """A list of all of the graphic overlays that have been drawn.
+
+        Returns
+        -------
+        _______
+        `~regions.CircleSkyRegion`, `~regions.EllipseSkyRegion`,
+        `~regions.LineSkyRegion`,`~regions.PolygonSkyRegion`,
+        `~regions.RectangleSkyRegion`, `~regions.Regions`, or a list of these.
+            The region(s) to add in Aladin Lite. It can be given as a supported region
+            or a list of regions from the
+            `regions package <https://astropy-regions.readthedocs.io>`_.
+
+        """
+        return self._graphic_overlays
 
     @property
     def height(self) -> int:
@@ -815,6 +893,9 @@ class Aladin(anywidget.AnyWidget):
         else:
             region_list = region
 
+        # keep track of all of the graphic overlays we have drawn
+        self._graphic_overlays.append(region_list)
+
         regions_infos = []
         for region_element in region_list:
             if not isinstance(region_element, Region):
@@ -927,6 +1008,88 @@ class Aladin(anywidget.AnyWidget):
         if selection_type not in {"circle", "rectangle"}:
             raise ValueError("selection_type must be 'circle' or 'rectangle'")
         self.send({"event_name": "trigger_selection", "selection_type": selection_type})
+
+    def select_region(self, region: SupportedSelectionRegion) -> None:
+        """Triggers Aladin Lite to select a given astropy region.
+
+        Parameters
+        ----------
+        __________
+        region: `~regions.CircleSkyRegion`, `~regions.PolygonSkyRegion`, or a
+        `~regions.RectangleSkyRegion`
+            The selection region to add in Aladin Lite. It can be given as a supported
+            region from the `regions package <https://astropy-regions.readthedocs.io>`_.
+        """
+        if Region is None:
+            raise ModuleNotFoundError(
+                "To read regions objects, you need to install the regions library with "
+                "'pip install regions'."
+            )
+
+        event_name = "trigger_select_region"
+        if type(region) is CircleSkyRegion:
+            ra = region.center.ra.value
+            dec = region.center.dec.value
+            radius = region.radius.value
+            self.send(
+                {
+                    "event_name": event_name,
+                    "selection_type": "circle",
+                    "startCoo": {
+                        "ra": ra,
+                        "dec": dec,
+                    },
+                    "endCoo": {"ra": ra, "dec": dec + radius},
+                }
+            )
+
+        elif type(region) is RectangleSkyRegion:
+            ra = region.center.ra.value
+            dec = region.center.dec.value
+            angle = region.angle.value
+            width = region.width.value
+            height = region.height.value
+
+            # Calculate the corners of the rectangle selection region from the provided
+            # ra, dec, angle, width, and height
+            # https://stackoverflow.com/questions/41898990/find-corners-of-a-rotated-rectangle-given-its-center-point-and-rotation  # noqa: E501
+            self.send(
+                {
+                    "event_name": event_name,
+                    "selection_type": "rect",
+                    "startCoo": {
+                        "ra": ra
+                        + ((width / 2) * math.cos(angle))
+                        - ((height / 2) * math.sin(angle)),
+                        "dec": dec
+                        + ((width / 2) * math.sin(angle))
+                        + ((height / 2) * math.cos(angle)),
+                    },
+                    "endCoo": {
+                        "ra": ra
+                        - ((width / 2) * math.cos(angle))
+                        + ((height / 2) * math.sin(angle)),
+                        "dec": dec
+                        - ((width / 2) * math.sin(angle))
+                        - ((height / 2) * math.cos(angle)),
+                    },
+                }
+            )
+
+        elif type(region) is PolygonSkyRegion:
+            self.send(
+                {
+                    "event_name": event_name,
+                    "selection_type": "poly",
+                    "coos": [
+                        {
+                            "ra": coo.ra.value,
+                            "dec": coo.dec.value,
+                        }
+                        for coo in region.vertices
+                    ],
+                }
+            )
 
     def rectangular_selection(self) -> None:
         """Trigger the rectangular selection tool.

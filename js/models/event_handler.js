@@ -1,5 +1,6 @@
 import MessageHandler from "./message_handler";
 import { divNumber, setDivNumber, Lock, setDivHeight } from "../utils";
+import { SelectorToJson } from "./selection_handler";
 
 export default class EventHandler {
   /**
@@ -246,6 +247,14 @@ export default class EventHandler {
       });
     });
 
+    this.aladin.on("regionSelected", (region) => {
+      this.model.set("_selected_regions", [
+        ...(this.model.get("_selected_regions") ?? []),
+        region,
+      ]);
+      this.model.save_changes();
+    });
+
     /* Aladin functionalities */
 
     this.model.on("change:coo_frame", () => {
@@ -279,6 +288,7 @@ export default class EventHandler {
       change_colormap: this.messageHandler.handleChangeColormap,
       get_JPG_thumbnail: this.messageHandler.handleGetJPGThumbnail,
       trigger_selection: this.messageHandler.handleTriggerSelection,
+      trigger_select_region: this.messageHandler.handleTriggerSelectRegion,
       add_table: this.messageHandler.handleAddTable,
     };
 
