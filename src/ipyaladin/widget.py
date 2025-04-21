@@ -1039,7 +1039,7 @@ class Aladin(anywidget.AnyWidget):
                         "ra": ra,
                         "dec": dec,
                     },
-                    "endCoo": {"ra": ra + radius, "dec": dec},
+                    "endCoo": {"ra": ra, "dec": dec + radius},
                 }
             )
 
