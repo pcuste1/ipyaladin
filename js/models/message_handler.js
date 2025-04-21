@@ -157,7 +157,7 @@ export default class MessageHandler {
   }
 
   handleTriggerSelectRegion(msg) {
-    SelectRegion(msg, this.aladin);
+    this.aladin.selectRegion(msg);
   }
 
   handleAddTable(msg, buffers) {
