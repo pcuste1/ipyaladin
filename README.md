@@ -2,12 +2,19 @@
 
 [![Documentation](https://img.shields.io/badge/Documentation-gray?style=flat&link=https://cds-astro.github.io/ipyaladin/)](https://cds-astro.github.io/ipyaladin/)
 
+## DISCLAIMER:
+
+## This is a temporary development branch to be used by folks from STScI on Team Cobalt
+
+## working towards integration of ipyaladin and MAST platforms in mast-aladin-lite
+
 A bridge between Jupyter and Aladin Lite, enabling interactive sky visualization in IPython notebooks.
 With a couple of lines, you can display Aladin Lite, center it on the target of your choice, and overlay an Astropy table:
 
 ![ipyaladin example](assets/ipyaladin-screencast.gif)
 
 - [ipyaladin](#ipyaladin)
+  - [DISCLAIMER](#disclaimer)
   - [Examples](#examples)
     - [A subset of examples](#a-subset-of-examples)
   - [Installation](#installation)
