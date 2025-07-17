@@ -4,9 +4,7 @@
 
 ## DISCLAIMER:
 
-## This is a temporary development branch to be used by folks from STScI on Team Cobalt
-
-## working towards integration of ipyaladin and MAST platforms in mast-aladin-lite
+### This is a temporary development branch to be used by folks from STScI on Team Cobalt working towards integration of ipyaladin and MAST platforms in mast-aladin-lite.
 
 A bridge between Jupyter and Aladin Lite, enabling interactive sky visualization in IPython notebooks.
 With a couple of lines, you can display Aladin Lite, center it on the target of your choice, and overlay an Astropy table:
