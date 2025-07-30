@@ -52,6 +52,7 @@ build_cmd = "build"
 fix = true
 show-fixes = true
 extend-include = ["*.ipynb"]
+extend-ignore = ["PLC0415"]
 
 [tool.ruff.lint]
 extend-select = ["E", "W", "YTT", "ASYNC", "BLE", "B", "A",
