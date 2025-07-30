@@ -143,6 +143,7 @@ class Aladin(anywidget.AnyWidget):
     # Options for the view initialization
     _init_options = traitlets.Dict().tag(sync=True)
     _height = Int(400).tag(sync=True, init_option=True)
+    _rotation = Float(0).tag(sync=True, init_option=True)
     _target = Unicode(
         "0 0",
         help="A private trait that stores the current target of the widget in a string."
@@ -220,8 +221,12 @@ class Aladin(anywidget.AnyWidget):
         # https://github.com/jupyter-widgets/ipywidgets/blob/main/python/ipywidgets/ipywidgets/widgets/domwidget.py
         for key in ["layout", "tabbable", "tooltip"]:
             init_options.pop(key, None)
+        init_options["north_pole_orientation"] = init_options.get(
+            "north_pole_orientation", init_options.get("rotation", 0)
+        )
         # some init options are properties here
         self.height = init_options.get("height", self._height)
+        self.rotation = init_options.get("north_pole_orientation", self._rotation)
         self.target = init_options.get("target", self._target)
         self.fov = init_options.get("fov", self._fov)
         # apply different default options from Aladin-Lite
@@ -293,6 +298,38 @@ class Aladin(anywidget.AnyWidget):
         self._wcs = {}
         self._fov_xy = {}
         self._height = height
+
+    @property
+    def rotation(self) -> float:
+        """The center rotation of the widget.
+
+        This is the view center to north pole angle in degrees.
+        This is equivalent to getting the 3rd Euler angle.
+        Positive angles rotates the view in the counter clockwise
+        order (or towards the east).
+
+        It can be set with either a float number in degrees
+        or an astropy.coordinates.Angle object.
+
+        Returns
+        -------
+        astropy.coordinates.Angle
+            An astropy.coordinates.Angle object representing the center
+            rotation of the widget in degrees. The default rotation is
+            0 degrees.
+        """
+        return Angle(self._rotation, unit="deg")
+
+    @rotation.setter
+    def rotation(self, rotation: Union[float, Angle]) -> None:
+        if isinstance(rotation, Angle):
+            rotation = rotation.deg
+        if np.isclose(self._rotation, rotation):
+            return
+        self._wcs = {}
+        self._fov_xy = {}
+        self._rotation = rotation
+        self.send({"event_name": "change_rotation", "rotation": rotation})
 
     @property
     def wcs(self) -> WCS:

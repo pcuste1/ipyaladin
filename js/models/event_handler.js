@@ -47,6 +47,15 @@ export default class EventHandler {
   }
 
   /**
+   * Updates the view center rotation in the model.
+   * WARNING: This method doesn't call model.save_changes()!
+   */
+  updateRotation() {
+    if (!this.isLastDiv()) return;
+    this.model.set("_rotation", this.aladin.getRotation());
+  }
+
+  /**
    * Updates the 2-axis FoV in the model.
    * WARNING: This method don't call model.save_changes()!
    */
@@ -138,6 +147,15 @@ export default class EventHandler {
       this.model.save_changes();
     });
 
+    /* Rotation control */
+    this.model.on("change:_rotation", () => {
+      this.updateRotation(this.model.get("_rotation"), this.aladinDiv);
+      // Update WCS and FoV only if this is the last div
+      this.updateWCS();
+      this.update2AxisFoV();
+      this.model.save_changes();
+    });
+
     /* Aladin callbacks */
 
     this.aladin.on("cooFrameChanged", () => {
@@ -179,6 +197,17 @@ export default class EventHandler {
           content: {
             ra: object["ra"],
             dec: object["dec"],
+          },
+        });
+      }
+    });
+
+    this.aladin.on("rotationChanged", (object) => {
+      if (object["data"] !== undefined) {
+        this.model.send({
+          event_type: "rotation_changed",
+          content: {
+            rotation: object["rotation"],
           },
         });
       }
@@ -273,6 +302,7 @@ export default class EventHandler {
     this.eventHandlers = {
       add_marker: this.messageHandler.handleAddMarker,
       change_fov: this.messageHandler.handleChangeFoV,
+      change_rotation: this.messageHandler.handleChangeRotation,
       goto_ra_dec: this.messageHandler.handleGotoRaDec,
       save_view_as_image: this.messageHandler.handleSaveViewAsImage,
       add_fits: this.messageHandler.handleAddFits,
@@ -302,6 +332,7 @@ export default class EventHandler {
     this.model.off("change:_target");
     this.model.off("change:_fov");
     this.model.off("change:_height");
+    this.model.off("change:_rotation");
     this.model.off("change:coo_frame");
     this.model.off("change:survey");
     this.model.off("change:overlay_survey");
