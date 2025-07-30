@@ -178,6 +178,11 @@ class Aladin(anywidget.AnyWidget):
     ).tag(sync=True)
     _wcs = traitlets.Dict().tag(sync=True)
     _fov_xy = traitlets.Dict().tag(sync=True)
+    # Overlays
+    _overlays = traitlets.List(
+        [],
+        help="A list of overlays on the widget.",
+    ).tag(sync=True)
 
     # content of the last click
     clicked_object = traitlets.Dict().tag(sync=True)
@@ -259,6 +264,9 @@ class Aladin(anywidget.AnyWidget):
             self.listener_callback["select"](message["content"])
         elif event_type == "save_view_as_image":
             self._save_file(message["path"], buffers[0])
+        elif event_type == "current_overlays":
+            self._overlays = message["content"]["overlays"]
+            self.listener_callback["current_overlays"](message["content"])
 
     @property
     def selected_objects(self) -> List[Table]:
@@ -275,6 +283,17 @@ class Aladin(anywidget.AnyWidget):
             objects_data = [obj["data"] for obj in selected_object]
             catalogs.append(Table(objects_data))
         return catalogs
+
+    @property
+    def overlays(self) -> List:
+        """The list of overlays on the widget.
+
+        Returns
+        -------
+        list
+            A list of strings representing the widget overlays.
+        """
+        return self._overlays
 
     @property
     def height(self) -> int:
@@ -993,6 +1012,35 @@ class Aladin(anywidget.AnyWidget):
         )
 
     @widget_should_be_loaded
+    def remove_overlay(self, overlay_name: Union[Iterable[str], str]) -> None:
+        """Remove an overlay layer defined by a string.
+
+        Parameters
+        ----------
+        overlay_name : str, Iterable[str]
+            The string or an iterable of strings.
+        """
+        overlay_names = (
+            [overlay_name] if isinstance(overlay_name, str) else overlay_name
+        )
+
+        self.send(
+            {
+                "event_name": "remove_overlay",
+                "overlay_names": overlay_names,
+            }
+        )
+
+    @widget_should_be_loaded
+    def get_overlays(self) -> List:
+        """Update the current overlays defined by their names."""
+        self.send(
+            {
+                "event_name": "get_overlays",
+            }
+        )
+
+    @widget_should_be_loaded
     def set_color_map(self, color_map_name: str) -> None:
         """Change the color map of the Aladin Lite widget.
 
@@ -1043,7 +1091,8 @@ class Aladin(anywidget.AnyWidget):
         Parameters
         ----------
         listener_type : str
-            Can either be 'object_hovered', 'object_clicked', 'click' or 'select'
+            Can either be 'object_hovered', 'object_clicked', 'click', 'select',
+            or 'current_overlays'
         callback : Callable
             A python function to be called when the event corresponding to the
             listener_type is detected
@@ -1057,10 +1106,13 @@ class Aladin(anywidget.AnyWidget):
             self.listener_callback["click"] = callback
         elif listener_type == "select":
             self.listener_callback["select"] = callback
+        elif listener_type == "current_overlays":
+            self.listener_callback["current_overlays"] = callback
         else:
             raise ValueError(
                 "listener_type must be 'object_hovered', "
-                "'object_clicked', 'click' or 'select'"
+                "'object_clicked', 'click', 'select', "
+                "or 'current_overlays'"
             )
 
     @widget_should_be_loaded
