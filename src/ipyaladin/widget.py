@@ -1007,7 +1007,7 @@ class Aladin(anywidget.AnyWidget):
             {
                 "event_name": "add_overlay",
                 "regions_infos": regions_infos,
-                "graphic_options": {},
+                "graphic_options": overlay_options,
             }
         )
 
