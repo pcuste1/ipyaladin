@@ -94,6 +94,11 @@ export default class EventHandler {
         return;
       }
       jsTargetLock.lock();
+
+      if (this.aladin.view.dragging) {
+        return;
+      }
+
       const raDec = [position.ra, position.dec];
       this.updateWCS();
       this.model.set("_target", `${raDec[0]} ${raDec[1]}`);
@@ -122,6 +127,12 @@ export default class EventHandler {
       }
       jsFovLock.lock();
       // fov MUST be cast into float in order to be sent to the model
+
+      const zoom = this.aladin.view.zoom;
+      if (zoom.isZooming && fov != zoom.finalZoom) {
+        return;
+      }
+
       this.updateWCS();
       this.update2AxisFoV();
       this.model.set("_fov", parseFloat(fov.toFixed(5)));
