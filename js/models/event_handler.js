@@ -160,7 +160,6 @@ export default class EventHandler {
 
     /* Rotation control */
     this.model.on("change:_rotation", () => {
-      this.updateRotation(this.model.get("_rotation"), this.aladinDiv);
       // Update WCS and FoV only if this is the last div
       this.updateWCS();
       this.update2AxisFoV();
