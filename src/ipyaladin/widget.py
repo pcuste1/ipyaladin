@@ -345,8 +345,6 @@ class Aladin(anywidget.AnyWidget):
             rotation = rotation.deg
         if np.isclose(self._rotation, rotation):
             return
-        self._wcs = {}
-        self._fov_xy = {}
         self._rotation = rotation
         self.send({"event_name": "change_rotation", "rotation": rotation})
 
